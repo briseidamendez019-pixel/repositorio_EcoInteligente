@@ -14,8 +14,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-# ================= MODELOS =================
-
 class Usuario(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     correo = db.Column(db.String(100), unique=True, nullable=False)
@@ -38,13 +36,9 @@ class Encuesta(db.Model):
     respuesta5 = db.Column(db.String(200))
     fecha = db.Column(db.DateTime, default=db.func.now())
 
-# ================= LOGIN MANAGER =================
-
 @login_manager.user_loader
 def load_user(user_id):
     return Usuario.query.get(int(user_id))
-
-# ================= DECORADOR ADMIN =================
 
 def solo_admin(f):
     @wraps(f)
@@ -54,8 +48,6 @@ def solo_admin(f):
         return f(*args, **kwargs)
     return decorador
 
-# ================= CREAR ADMIN INICIAL =================
-
 with app.app_context():
     db.create_all()
     if not Usuario.query.filter_by(correo="admin@gmail.com").first():
@@ -63,8 +55,6 @@ with app.app_context():
         admin.set_password("1234")
         db.session.add(admin)
         db.session.commit()
-
-# ================= RUTAS =================
 
 @app.route('/')
 def inicio():
@@ -128,8 +118,6 @@ def encuesta():
         mensaje = "Encuesta guardada correctamente"
     return render_template('encuesta.html', mensaje=mensaje)
 
-# ================= GESTION DE USUARIOS =================
-
 @app.route('/gestion')
 @login_required
 @solo_admin
@@ -149,8 +137,6 @@ def eliminar_usuario(id):
     db.session.commit()
     flash("Usuario eliminado correctamente.", "success")
     return redirect(url_for('gestion'))
-
-# ================= RESULTADOS DE ENCUESTAS =================
 
 @app.route('/resultados')
 @login_required
@@ -185,8 +171,6 @@ def editar(id):
         flash("Encuesta editada correctamente.", "success")
         return redirect(url_for('resultados'))
     return render_template('editar.html', encuesta=encuesta)
-
-# ================= PÁGINAS GENERALES =================
 
 @app.route("/que_es")
 @login_required
